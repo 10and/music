@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search the Sheet Music</title>
+  <style>
+    body {
+      background-color: #1f1f1f;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    #backlayer {
+      position: absolute;
+      width: 98%;
+      height: 500px;
+      left: -80px;
+      top: -1px;
+      z-index: 1;
+    }
+
+    #layer2 {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      left: 30%;
+      bottom: 45px;
+      z-index: 2;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 50px;
+      width: 90%;
+      max-width: 800px;
+      margin: 520px auto 50px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .card {
+      border: 2px solid #ffffff;
+      background-color: #272727;
+      padding: 10px;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .card img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .artist {
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    #pagination {
+      text-align: center;
+      margin-bottom: 100px;
+      color: white;
+      font-size: 16px;
+    }
+
+    #pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #pagination button:disabled {
+      background-color: #888;
+      cursor: default;
+    }
+
+    #pageInput {
+      width: 50px;
+      padding: 5px;
+      text-align: center;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="backlayer">
+    <img src="img/background-new.jpg" alt="배경" height="700px" width="108%" />
+  </div>
+
+  <div id="layer2">
+    <input type="text" id="data1" onkeydown="if(event.key === 'Enter') searchCards(1)"
+      style="background-image: url(표지/검색.png); background-size: 100% 92%; background-position: 0px 1px; width: 350px; height: 50px; color: rgb(0, 0, 0);" />
+    <input type="button" onclick="searchCards(1)"
+      style="background-image: url(표지/검색.jpg); width: 50px; height: 50px; background-size: 100%;" />
+    <select id="list" style="width: 70px; height: 30px;">
+      <option value="all">전체</option>
+      <option value="name">밴드명</option>
+      <option value="tit">제목</option>
+    </select>
+  </div>
+
+  <div class="grid-container" id="card-list"></div>
+  <div id="pagination"></div>
+
+  <script>
+    const cardData = [
+
+  {
+    title: "Let It Be",
+    artist: "The Beatles",
+    img: "표지/Let_It_Be.jpg",
+    url: "https://www.youtube.com/watch?v=MozJljTT168&pp=ygUgbGV0IGl0IGJlIHRoZSBiZWF0bGVzIGd1aXRhciB0YWI%3D"
+  },
+  {
+    title: "Hey Jude",
+    artist: "The Beatles",
+    img: "표지/HEY JUDE.png",
+    url: "https://www.youtube.com/watch?v=Ig1oxAZJVYI&pp=ygUTaGV5IGp1ZGUgZ3VpdGFyIHRhYg%3D%3D"
+  },
+  {
+    title: "Yesterday",
+    artist: "The Beatles",
+    img: "표지/yesterday.webp",
+    url: "https://www.youtube.com/watch?v=zxAMml4Nt_Y&pp=ygUgeWVzdGVyZGF5IHRoZSBiZWF0bGVzIGd1aXRhciB0YWI%3D"
+  },
+  {
+    title: "Come Together",
+    artist: "The Beatles",
+    img: "표지/tugeter.jpg",
+    url: "https://www.youtube.com/watch?v=aJBX4pGLGp8"
+  },
+  {
+    title: "Help!",
+    artist: "The Beatles",
+    img: "표지/help.jpg",
+    url: "https://www.youtube.com/watch?v=F7bFXB2_h4s"
+  },
+  {
+    title: "Something",
+    artist: "The Beatles",
+    img: "표지/sem.jpg",
+    url: "https://www.youtube.com/watch?v=t-aAw-U_sZ0"
+  },
+  {
+    title: "Eleanor Rigby",
+    artist: "The Beatles",
+    img: "표지/rig.jpg",
+    url: "https://www.youtube.com/watch?v=banQWYUfVoI"
+  },
+  {
+    title: "A Day in the Life",
+    artist: "The Beatles",
+    img: "표지/day.jpg",
+    url: "https://www.youtube.com/watch?v=2kUp3laM7Y4"
+  },
+  {
+    title: "Here Comes the Sun",
+    artist: "The Beatles",
+    img: "표지/sun.jpg",
+    url: "https://www.youtube.com/watch?v=-nwua0NE2uQ"
+  },
+  {
+    title: "While My Guitar Gently Weeps",
+    artist: "The Beatles",
+    img: "표지/got.jpg",
+    url: "https://www.youtube.com/watch?v=hQFR0UzEbMg"
+  },
+
+  // Taylor Swift
+  {
+    title: "Love Story",
+    artist: "Taylor Swift",
+    img: "표지/love.jpg",
+    url: "https://www.youtube.com/watch?v=GGwYH2GZq6I&pp=ygUidGF5bG9yIHN3aWZ0IGxvdmUgc3RvcnkgZ3VpdGFyIHRhYtIHCQm-CQGHKiGM7w%3D%3D"
+  },
+  {
+    title: "You Belong With Me",
+    artist: "Taylor Swift",
+    img: "표지/my.jpg",
+    url: "https://www.youtube.com/watch?v=FT_cDrwH2jc&pp=ygUqdGF5bG9yIHN3aWZ0IHlvdSBiZWxvbmcgd2l0aCBtZSBndWl0YXIgdGFi"
+  },
+  {
+    title: "Blank Space",
+    artist: "Taylor Swift",
+    img: "표지/space.jpg",
+    url: "https://www.youtube.com/watch?v=6nVRsIc80A4&pp=ygUkdGF5bG9yIHN3aWZ0IGJsYW5rIHNwYWNlIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "All Too Well",
+    artist: "Taylor Swift",
+    img: "표지/well.jpg",
+    url: "https://www.youtube.com/watch?v=Qz7b6OfaR0Q&list=RDQz7b6OfaR0Q&start_radio=1"
+  },
+  {
+    title: "Shake It Off",
+    artist: "Taylor Swift",
+    img: "표지/off.webp",
+    url: "https://www.youtube.com/watch?v=902MNvRnp_8&pp=ygUldGF5bG9yIHN3aWZ0IHNoYWtlIGl0IG9mZiBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Anti-Hero",
+    artist: "Taylor Swift",
+    img: "표지/hero.webp",
+    url: "https://www.youtube.com/watch?v=8mf66303z8c&pp=ygUjdGF5bG9yIHN3aWZ0IGFudGktaGVybyAgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Style",
+    artist: "Taylor Swift",
+    img: "표지/style.jpg",
+    url: "https://www.youtube.com/watch?v=wwXa-Wh5mC0&pp=ygUfdGF5bG9yIHN3aWZ0IHN0eWxlICBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Wildest Dreams",
+    artist: "Taylor Swift",
+    img: "표지/dream.webp",
+    url: "https://www.youtube.com/watch?v=Gs9fVOrpqj4&pp=ygUnd2lsZGVzdCBkcmVhbXMgdGF5bG9yIHN3aWZ0IGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Enchanted",
+    artist: "Taylor Swift",
+    img: "표지/en.jpg",
+    url: "https://www.youtube.com/watch?v=CSWpSQA9f2U&pp=ygUrZW5jaGFudGVkIHRheWxvciBzd2lmdCBndWl0YXIgdHV0b3JpYWwgdGFicw%3D%3D"
+  },
+  {
+    title: "Cruel Summer",
+    artist: "Taylor Swift",
+    img: "표지/summer.jpg",
+    url: "https://www.youtube.com/watch?v=J3BxBYjo0dc&pp=ygUldGF5bG9yIHN3aWZ0IENydWVsIFN1bW1lciBndWl0YXIgdGFicw%3D%3D"
+  },
+
+  // Queen
+  {
+    title: "Bohemian Rhapsody",
+    artist: "Queen",
+    img: "표지/mian.jpg",
+    url: "https://www.youtube.com/watch?v=n1WomoCiYqg&pp=ygUjUXVlZW4gQm9oZW1pYW4gUmhhcHNvZHkgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Don’t Stop Me Now",
+    artist: "Queen",
+    img: "표지/dont.jpg",
+    url: "https://www.youtube.com/watch?v=ZOGmrBTW1-M&pp=ygUkUXVlZW4gb27igJl0IFN0b3AgTWUgTm93IGd1aXRhciB0YWJz"
+  },
+  {
+    title: "We Will Rock You",
+    artist: "Queen",
+    img: "표지/rock.jpg",
+    url: "https://www.youtube.com/watch?v=if9q6BpMd-o&pp=ygUicXVlZW4gd2Ugd2lsbCByb2NrIHlvdSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "We Are the Champions",
+    artist: "Queen",
+    img: "표지/champions.jpg",
+    url: "https://www.youtube.com/watch?v=7qzbSCXjaC4&pp=ygUmcXVlZW4gd2UgYXJlIHRoZSBjaGFtcGlvbnMgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Somebody to Love",
+    artist: "Queen",
+    img: "표지/to love.jpg",
+    url: "https://www.youtube.com/watch?v=GkhnH1kMbbY&pp=ygUic29tZWJvZHkgdG8gbG92ZSBxdWVlbiBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Killer Queen",
+    artist: "Queen",
+    img: "표지/killer.jpg",
+    url: "https://www.youtube.com/watch?v=00YBEy8SS5U&pp=ygUecXVlZW4gS2lsbGVyIFF1ZWVuIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Under Pressure",
+    artist: "Queen",
+    img: "표지/under.jpg",
+    url: "https://www.youtube.com/watch?v=XBQ5lm5KYqg&pp=ygUgcXVlZW4gVW5kZXIgUHJlc3N1cmUgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Love of My Life",
+    artist: "Queen",
+    img: "표지/mylife.jpg",
+    url: "https://www.youtube.com/watch?v=UjuKBi4c9cI&pp=ygUhcXVlZW4gTG92ZSBvZiBNeSBMaWZlIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Radio Ga Ga",
+    artist: "Queen",
+    img: "표지/gaga.jpg",
+    url: "https://www.youtube.com/watch?v=vgQGA9J4TIo&pp=ygUdcXVlZW4gUmFkaW8gR2EgR2EgZ3VpdGFyIHRhYnPSBwkJvgkBhyohjO8%3D"
+  },
+  {
+    title: "The Show Must Go On",
+    artist: "Queen",
+    img: "표지/goon.jpg",
+    url: "https://www.youtube.com/watch?v=g33QizoF-f8&pp=ygUlcXVlZW4gVGhlIFNob3cgTXVzdCBHbyBPbiBndWl0YXIgdGFic9IHCQm-CQGHKiGM7w%3D%3D"
+  },
+
+  // Coldplay
+  {
+    title: "Yellow",
+    artist: "Coldplay",
+    img: "표지/yellow.jpg",
+    url: "https://www.youtube.com/watch?v=IQhXXaUu0KY&pp=ygUbQ29sZHBsYXkgWWVsbG93IGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Fix You",
+    artist: "Coldplay",
+    img: "표지/fixyou.jpg",
+    url: "https://www.youtube.com/watch?v=RhJOMfsgzKI&pp=ygUcQ29sZHBsYXkgRml4IFlvdSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Viva La Vida",
+    artist: "Coldplay",
+    img: "표지/vivalavida.jpg",
+    url: "https://www.youtube.com/watch?v=sVvyXmeCyF8&pp=ygUaQ29sZHBsYXkgVml2YSBMYSBWaWRhIHRhYnM%3D"
+  },
+  {
+    title: "The Scientist",
+    artist: "Coldplay",
+    img: "표지/thescientist.jpg",
+    url: "https://www.youtube.com/watch?v=ryvZkMyo6bY&pp=ygUbY29sZHBsYXkgdGhlIHNjaWVudGlzdCB0YWJz"
+  },
+  {
+    title: "Paradise",
+    artist: "Coldplay",
+    img: "표지/paradise.jpg",
+    url: "https://www.youtube.com/watch?v=AZ4jlWuUOSE&pp=ygUdcGFyYWRpc2UgY29sZHBsYXkgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "A Sky Full of Stars",
+    artist: "Coldplay",
+    img: "표지/askyfullofstars.jpg",
+    url: "https://www.youtube.com/watch?v=SfzxvSYBKfk&pp=ygUoY29sZHBsYXkgYSBza3kgZnVsbCBvZiBzdGFycyB0YWJzIOqwgOyCrA%3D%3D"
+  },
+  {
+    title: "Clocks",
+    artist: "Coldplay",
+    img: "표지/clocks.jpg",
+    url: "https://www.youtube.com/watch?v=Ob8sUCMuoy0&pp=ygUUY29sZHBsYXkgQ2xvY2tzIHRhYnM%3D"
+  },
+  {
+    title: "Hymn for the Weekend",
+    artist: "Coldplay",
+    img: "표지/hymnfortheweekend.jpg",
+    url: "https://www.youtube.com/watch?v=iFMmFwk1-sA&pp=ygUiY29sZHBsYXkgSHltbiBmb3IgdGhlIFdlZWtlbmQgdGFicw%3D%3D"
+  },
+  {
+    title: "My Universe",
+    artist: "Coldplay",
+    img: "표지/myuniverse.jpg",
+    url: "https://www.youtube.com/watch?v=SS6HWLje7M4&pp=ygUZY29sZHBsYXkgTXkgVW5pdmVyc2UgdGFic9IHCQm-CQGHKiGM7w%3D%3D"
+  },
+  {
+    title: "Magic",
+    artist: "Coldplay",
+    img: "표지/magic.jpg",
+    url: "https://www.youtube.com/watch?v=_6CfipCeUbM&pp=ygUTTWFnaWMgY29sZHBsYXkgdGFicw%3D%3D"
+  },
+  //Adele
+  {
+    title: "Someone Like You",
+    artist: "Adele",
+    img: "표지/someonelikeyou.jpg",
+    url: "https://www.youtube.com/watch?v=mjwqrQkMLpQ&pp=ygUbU29tZW9uZSBMaWtlIFlvdSBhZGVsZSB0YWJz"
+  },
+  {
+    title: "Rolling in the Deep",
+    artist: "Adele",
+    img: "표지/rollinginthedeep.jpg",
+    url: "https://www.youtube.com/watch?v=dbCwDVxnQNU&pp=ygUlUm9sbGluZyBpbiB0aGUgRGVlcCBhZGVsZSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Hello",
+    artist: "Adele",
+    img: "표지/hello.jpg",
+    url: "https://www.youtube.com/watch?v=JODcWf_HaQY&pp=ygUXSGVsbG8gYWRlbGUgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Easy on Me",
+    artist: "Adele",
+    img: "표지/easyonme.jpg",
+    url: "https://www.youtube.com/watch?v=m_bYh8s69r8&pp=ygUWRWFzeSBvbiBNZSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Set Fire to the Rain",
+    artist: "Adele",
+    img: "표지/setfiretotherain.jpg",
+    url: "https://www.youtube.com/watch?v=qx_7lEsO4Uo&pp=ygUgU2V0IEZpcmUgdG8gdGhlIFJhaW4gZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "When We Were Young",
+    artist: "Adele",
+    img: "표지/whenwewereyoung.jpg",
+    url: "https://www.youtube.com/watch?v=JsTyvGE7cDo&pp=ygUeV2hlbiBXZSBXZXJlIFlvdW5nIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Skyfall",
+    artist: "Adele",
+    img: "표지/skyfall.jpg",
+    url: "https://www.youtube.com/watch?v=OiPgXjK1w0w&pp=ygUYU2t5ZmFsIGFkZWxlIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Chasing Pavements",
+    artist: "Adele",
+    img: "표지/chasingpavements.jpg",
+    url: "https://www.youtube.com/watch?v=jWT2plIAhyc&pp=ygUjQ2hhc2luZyBQYXZlbWVudHMgYWRlbGUgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Make You Feel My Love",
+    artist: "Adele",
+    img: "표지/makeyoufeelmylove.jpg",
+    url: "https://www.youtube.com/watch?v=YH_6caceDd0&pp=ygUnTWFrZSBZb3UgRmVlbCBNeSBMb3ZlIGFkZWxlIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Oh My God",
+    artist: "Adele",
+    img: "표지/ohmygod.jpg",
+    url: "https://www.youtube.com/watch?v=wB1YXRWFmFw&pp=ygUbT2ggTXkgR29kIGFkZWxlIGd1aXRhciB0YWJz0gcJCb4JAYcqIYzv"
+  },
+
+  // Metallica
+  {
+    title: "Enter Sandman",
+    artist: "Metallica",
+    img: "표지/entersandman.jpg",
+    url: "https://www.youtube.com/watch?v=NIAkEJp8i_Y&pp=ygUiRW50ZXIgU2FuZG1hbiBtZXRhbGljYSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Nothing Else Matters",
+    artist: "Metallica",
+    img: "표지/nothingelsematters.jpg",
+    url: "https://www.youtube.com/watch?v=Y3WzbPyovbE&pp=ygUpTm90aGluZyBFbHNlIE1hdHRlcnMgbWV0YWxpY2EgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "One",
+    artist: "Metallica",
+    img: "표지/one.jpg",
+    url: "https://www.youtube.com/watch?v=2DwZzHimUlU&pp=ygUYT25lIG1ldGFsaWNhIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Master of Puppets",
+    artist: "Metallica",
+    img: "표지/masterofpuppets.jpg",
+    url: "https://www.youtube.com/watch?v=S6jkEOIHJFg&pp=ygUmTWFzdGVyIG9mIFB1cHBldHMgbWV0YWxpY2EgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Fade to Black",
+    artist: "Metallica",
+    img: "표지/fadetoblack.jpg",
+    url: "https://www.youtube.com/watch?v=BFHA7-3wbzQ&pp=ygUiRmFkZSB0byBCbGFjayBtZXRhbGljYSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "The Unforgiven",
+    artist: "Metallica",
+    img: "표지/theunforgiven.jpg",
+    url: "https://www.youtube.com/watch?v=a-Ry4B4ul-E&pp=ygUjVGhlIFVuZm9yZ2l2ZW4gbWV0YWxpY2EgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "For Whom the Bell Tolls",
+    artist: "Metallica",
+    img: "표지/forwhomthebelltolls.jpg",
+    url: "https://www.youtube.com/watch?v=cniVsbWBqwY&pp=ygUsRm9yIFdob20gdGhlIEJlbGwgVG9sbHMgbWV0YWxpY2EgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Seek & Destroy",
+    artist: "Metallica",
+    img: "표지/seekanddestroy.jpg",
+    url: "https://www.youtube.com/watch?v=z44pg4ETY3k&pp=ygUjU2VlayAmIERlc3Ryb3kgbWV0YWxpY2EgZ3VpdGFyIHRhYnPSBwkJvgkBhyohjO8%3D"
+  },
+  {
+    title: "Sad but True",
+    artist: "Metallica",
+    img: "표지/sadbuttrue.jpg",
+    url: "https://www.youtube.com/watch?v=kcmmCJSTMoY&pp=ygUhU2FkIGJ1dCBUcnVlIG1ldGFsaWNhIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Creeping Death",
+    artist: "Metallica",
+    img: "표지/creepingdeath.jpg",
+    url: "https://www.youtube.com/watch?v=BPoNXCW8Ous&pp=ygUjQ3JlZXBpbmcgRGVhdGggbWV0YWxpY2EgZ3VpdGFyIHRhYnM%3D"
+  },
+  // Nirvana
+  {
+    title: "Smells Like Teen Spirit",
+    artist: "Nirvana",
+    img: "표지/smellsliketeenspirit.jpg",
+    url: "https://www.youtube.com/watch?v=M9F23jZ9Cvk&pp=ygUrU21lbGxzIExpa2UgVGVlbiBTcGlyaXQgbmlydmFuYSBndWl0YXIgdGFic9IHCQm-CQGHKiGM7w%3D%3D"
+  },
+  {
+    title: "Come As You Are",
+    artist: "Nirvana",
+    img: "표지/comeasyouare.jpg",
+    url: "https://www.youtube.com/watch?v=A2ST1PNaEwg&pp=ygUjQ29tZSBBcyBZb3UgQXJlIG5pcnZhbmEgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Lithium",
+    artist: "Nirvana",
+    img: "표지/lithium.jpg",
+    url: "https://www.youtube.com/watch?v=6dSAN2vbnig&pp=ygUibGl0aGl1bSBuaXJ2YW5hIGd1aXRhciBsZXNzb24gdGFicw%3D%3D"
+  },
+  {
+    title: "Heart-Shaped Box",
+    artist: "Nirvana",
+    img: "표지/heartshapedbox.jpg",
+    url: "https://www.youtube.com/watch?v=DKa6YoeYcKE&pp=ygUkSGVhcnQtU2hhcGVkIEJveCBuaXJ2YW5hIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "In Bloom",
+    artist: "Nirvana",
+    img: "표지/inbloom.jpg",
+    url: "https://www.youtube.com/watch?v=kdfQ6pUWjn4&pp=ygUcSW4gQmxvb20gbmlydmFuYSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "About a Girl",
+    artist: "Nirvana",
+    img: "표지/aboutagirl.jpg",
+    url: "https://www.youtube.com/watch?v=R44ENb5G5j4&pp=ygUYQWJvdXQgYSBHaXJsIGd1aXRhciB0YWJz"
+  },
+  {
+    title: "Rape Me",
+    artist: "Nirvana",
+    img: "표지/rapeme.jpg",
+    url: "https://www.youtube.com/watch?v=WusE4KG2TUA&pp=ygUTUmFwZSBNZSBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "All Apologies",
+    artist: "Nirvana",
+    img: "표지/allapologies.jpg",
+    url: "https://www.youtube.com/watch?v=ojbOnznWljc&pp=ygUZQWxsIEFwb2xvZ2llcyBndWl0YXIgdGFicw%3D%3D"
+  },
+  {
+    title: "Polly",
+    artist: "Nirvana",
+    img: "표지/polly.jpg",
+    url: "https://www.youtube.com/watch?v=M3ggufKFGec&pp=ygURUG9sbHkgZ3VpdGFyIHRhYnM%3D"
+  },
+  {
+    title: "Aneurysm",
+    artist: "Nirvana",
+    img: "표지/aneurysm.jpg",
+    url: "https://www.youtube.com/watch?v=ny3DTQv3VbQ&pp=ygUUQW5ldXJ5c20gZ3VpdGFyIHRhYnM%3D"
+  },
+
+  // 실리카겔
+  {
+    title: "NO PAIN",
+    artist: "실리카겔",
+    img: "표지/nopain.jpg",
+    url: "https://www.youtube.com/watch?v=uGVfCdzryD0&pp=ygUX64W47Y6Y7J24IOq4sO2DgCDtg4DruIw%3D"
+  },
+  {
+    title: "Desert Eagle",
+    artist: "실리카겔",
+    img: "표지/deserteagle.jpg",
+    url: "https://www.youtube.com/watch?v=hqWhNT20b3w&pp=ygUd642w7KCA7Yq47J206riAIOq4sO2DgCDtg4DruIw%3D"
+  },
+  {
+    title: "Tik Tak Tok (feat. So!YoON!)",
+    artist: "실리카겔",
+    img: "표지/tiktaktok.jpg",
+    url: "https://www.youtube.com/watch?v=1VxYUIaphcM&pp=ygUX7Yux7YOd7YahIOq4sO2DgCDtg4DruIw%3D"
+  },
+  {
+    title: "Kyo181",
+    artist: "실리카겔",
+    img: "표지/kyo181.jpg",
+    url: "https://www.youtube.com/watch?v=Lw-HSvmTmvc&pp=ygUUa3lvMTgxIOq4sO2DgCDslYXrs7Q%3D"
+  },
+  {
+    title: "Realize",
+    artist: "실리카겔",
+    img: "표지/realize.jpg",
+    url: "https://www.youtube.com/watch?v=BIMcmqccCCc&pp=ygUVcmVhbGl6ZSDquLDtg4Ag7JWF67O0"
+  },
+  // Radiohead
+  {
+    title: "Creep",
+    artist: "Radiohead",
+    img: "표지/creep.jpg",
+    url: "https://www.youtube.com/watch?v=UayaTO3cypw&list=RDUayaTO3cypw&start_radio=1"
+  },
+  {
+    title: "Karma Police",
+    artist: "Radiohead",
+    img: "표지/karmapolice.jpg",
+    url: "https://www.youtube.com/watch?v=vw90JAFcxMs&list=RDvw90JAFcxMs&start_radio=1"
+  },
+  {
+    title: "No Surprises",
+    artist: "Radiohead",
+    img: "표지/nosurprises.jpg",
+    url: "https://www.youtube.com/watch?v=PwgO42AV3qw&list=RDPwgO42AV3qw&start_radio=1"
+  },
+  {
+    title: "Fake Plastic Trees",
+    artist: "Radiohead",
+    img: "표지/fakeplastictrees.jpg",
+    url: "https://www.youtube.com/watch?v=32U8vWWrRM0"
+  },
+  {
+    title: "High and Dry",
+    artist: "Radiohead",
+    img: "표지/highanddry.jpg",
+    url: "https://www.youtube.com/watch?v=EkCzyjEbdlw"
+  },
+
+  {
+    title: "Street Spirit (Fade Out)",
+    artist: "Radiohead",
+    img: "표지/streetspritfadeout.jpg",
+    url: "https://www.youtube.com/watch?v=Ev1zbMQwJPk"
+  },
+
+  {
+    title: "Exit Music (For a Film)",
+    artist: "Radiohead",
+    img: "표지/exitmusicforafilm.jpg",
+    url: "https://www.youtube.com/watch?v=s5eFxpNfdOM"
+  },
+  {
+    title: "There There",
+    artist: "Radiohead",
+    img: "표지/therethere.jpg",
+    url: "https://www.youtube.com/watch?v=jhPyGJGvt6E"
+  },
+  // Ed Sheeran
+  { title: "Shape of You", artist: "Ed Sheeran", img: "표지/shapeofyou_edsheeran.jpg", url: "https://www.youtube.com/watch?v=p91GQ2Bzprs&list=RDp91GQ2Bzprs&start_radio=1" },
+  { title: "Perfect", artist: "Ed Sheeran", img: "표지/perfect_edsheeran.jpg", url: "https://www.youtube.com/watch?v=3OWy3JhBeVI&list=RD3OWy3JhBeVI&start_radio=1" },
+  { title: "Thinking Out Loud", artist: "Ed Sheeran", img: "표지/thinkingoutloud_edsheeran.jpg", url: "https://www.youtube.com/watch?v=0F-pNVkh4kM" },
+  { title: "Photograph", artist: "Ed Sheeran", img: "표지/photograph_edsheeran.jpg", url: "https://www.youtube.com/watch?v=rttRRPQyapo&list=RDrttRRPQyapo&start_radio=1" },
+  { title: "Castle on the Hill", artist: "Ed Sheeran", img: "표지/castleonthehill_edsheeran.jpg", url: "https://www.youtube.com/watch?v=GcDwzgC_pwQ&list=RDGcDwzgC_pwQ&start_radio=1" },
+  { title: "Galway Girl", artist: "Ed Sheeran", img: "표지/galwaygirl_edsheeran.jpg", url: "https://www.youtube.com/watch?v=rtXrqIeiU84&list=RDrtXrqIeiU84&start_radio=1" },
+  { title: "Happier", artist: "Ed Sheeran", img: "표지/happier_edsheeran.jpg", url: "https://www.youtube.com/watch?v=gAkkz7l7Z6Y" },
+  { title: "Dive", artist: "Ed Sheeran", img: "표지/dive_edsheeran.jpg", url: "https://www.youtube.com/watch?v=VhHmO_ayw2Q" },
+  { title: "I See Fire", artist: "Ed Sheeran", img: "표지/iseefire_edsheeran.jpg", url: "https://www.youtube.com/watch?v=Rdk_OadCS38&list=RDRdk_OadCS38&start_radio=1" },
+  { title: "Afterglow", artist: "Ed Sheeran", img: "표지/afterglow_edsheeran.jpg", url: "https://www.youtube.com/watch?v=d5XI2_Sfy_k&list=RDd5XI2_Sfy_k&start_radio=1" },
+
+  // Billie Eilish
+  { title: "Bad Guy", artist: "Billie Eilish", img: "표지/badguy_billieeilish.jpg", url: "https://www.youtube.com/watch?v=hgFrWMDsoNw&list=RDhgFrWMDsoNw&start_radio=1" },
+  { title: "Ocean Eyes", artist: "Billie Eilish", img: "표지/oceaneyes_billieeilish.jpg", url: "https://www.youtube.com/watch?v=VzbTaMM70yI" },
+  { title: "When the Party’s Over", artist: "Billie Eilish", img: "표지/whenthepartysover_billieeilish.jpg", url: "https://www.youtube.com/watch?v=5_pa0LDoAeI" },
+  { title: "Lovely (with Khalid)", artist: "Billie Eilish", img: "표지/lovely_billieeilish.jpg", url: "https://www.youtube.com/watch?v=WikPP7DLcr0&list=RDWikPP7DLcr0&start_radio=1" },
+  { title: "My Future", artist: "Billie Eilish", img: "표지/myfuture_billieeilish.jpg", url: "https://www.youtube.com/watch?v=MbCgZCW2Pwo&list=RDMbCgZCW2Pwo&start_radio=1" },
+
+  // Maroon 5
+  { title: "Sugar", artist: "Maroon 5", img: "표지/sugar_maroon5.jpg", url: "https://youtube.com/watch?v=C4efo6vE_I8&si=DoaOg_IndhK-Y-LK" },
+  { title: "Memories", artist: "Maroon 5", img: "표지/memories_maroon5.jpg", url: "https://youtube.com/watch?v=s-Mad9giuTQ&si=fhySMdOrV_BsgDhW" },
+  { title: "Girls Like You", artist: "Maroon 5", img: "표지/girlslikeyou_maroon5.jpg", url: "https://youtube.com/watch?v=c7VMc9SMn-I&si=q3lRlT0HcineJMOG" },
+  { title: "Moves Like Jagger", artist: "Maroon 5", img: "표지/moveslikejagger_maroon5.jpg", url:  "https://youtube.com/watch?v=FwOkLTwbeuM&si=QjE50m5I1Xo4r7SQ" },
+  { title: "She Will Be Loved", artist: "Maroon 5", img: "표지/shewillbeloved_maroon5.jpg", url: "https://youtube.com/watch?v=AarDp8gMdM4&si=W0v2Pw7TfD-a8gN6" },
+  { title: "This Love", artist: "Maroon 5", img: "표지/thislove_maroon5.jpg", url: " https://youtube.com/watch?v=syyBPD1Ez-8&si=qsqWxHgRU5wE7tPL" },
+  { title: "Payphone", artist: "Maroon 5", img: "표지/payphone_maroon5.jpg", url: "https://youtube.com/watch?v=hJcpFYww_Cw&si=1f5hQmPUDhf3hx5l" },
+  { title: "Animals", artist: "Maroon 5", img: "표지/animals_maroon5.jpg", url: " https://youtube.com/watch?v=44SF2ylyxT0&si=clUt8E8jp_HqkwpE" },
+  { title: "Sunday Morning", artist: "Maroon 5", img: "표지/sundaymorning_maroon5.jpg", url: " https://youtube.com/watch?v=3ITrluZ80js&si=K4bw8LzLWe_5klN5" },
+
+  // Ariana Grande
+  { title: "Thank U, Next", artist: "Ariana Grande", img: "표지/thankunext.jpg", url: "https://youtube.com/watch?v=yOorJZTMEuY&si=sa0VkNtfPbUgnyfQ" },
+  { title: "7 Rings", artist: "Ariana Grande", img: "표지/7rings.jpg", url: "https://youtube.com/watch?v=U9QfTCGyQYc&si=YYD9T61oh4ENRCp_" },
+  { title: "No Tears Left to Cry", artist: "Ariana Grande", img: "표지/notearslefttocry.jpg", url: "https://youtube.com/watch?v=se1a43cWGkM&si=1VwLwSMAONaf9J5q_left_to_cry_chords" },
+  { title: "Side to Side", artist: "Ariana Grande", img: "표지/sidetoside.jpg", url: "https://youtube.com/watch?v=KWPUsrDJnw8&si=qdb6pvPSG3szCzCZ" },
+  { title: "Into You", artist: "Ariana Grande", img: "표지/intoyou.jpg", url: "https://youtube.com/watch?v=gZWWATyO5l0&si=5tHo2trbtCfQ5Axa" },
+  { title: "Dangerous Woman", artist: "Ariana Grande", img: "표지/dangerouswoman.jpg", url: "https://youtube.com/watch?v=wr-tfpAWbZ4&si=MNH8Uv4laA8pWrG4" },
+  { title: "God Is a Woman", artist: "Ariana Grande", img: "표지/godisawoman.jpg", url: "https://youtube.com/watch?v=rHsKCQK2UB4&si=2PApS4CLGR6JeJQo" },
+  { title: "One Last Time", artist: "Ariana Grande", img: "표지/onelasttime.jpg", url: "https://youtube.com/watch?v=o6ySDFbRfYI&si=O6rCUk24Zmu3hwOs" },
+
+
+  // Beyoncé
+  { title: "Halo", artist: "Beyoncé", img: "표지/halo.jpg", url: "https://youtube.com/watch?v=zPzftDh8DEg&si=ZXN0OFT1iFl0CtFJ" },
+  { title: "Crazy in Love", artist: "Beyoncé", img: "표지/crazyinlove.jpg", url: "https://youtube.com/watch?v=fglW5orDqMs&si=MgFstO7KpuSZGxTy" },
+  { title: "Run the World (Girls)", artist: "Beyoncé", img: "표지/runtheworld.jpg", url: "https://www.ultimate-guitar.com/tab/beyonce/run_the_world_chords" },
+  { title: "Formation", artist: "Beyoncé", img: "표지/formation.jpg", url: "https://www.ultimate-guitar.com/tab/beyonce/formation_chords" },
+  { title: "If I Were a Boy", artist: "Beyoncé", img: "표지/ifiwereaboy.jpg", url: "https://youtube.com/watch?v=pjnlsYR6EuY&si=JffcP3YXr8UK2XQH" },
+  { title: "Love on Top", artist: "Beyoncé", img: "표지/loveontop.jpg", url: "https://youtube.com/watch?v=41ZZKE5_IqU&si=YcCOB4AYKLoePj-M" },
+
+
+  // Imagine Dragons
+  { title: "Radioactive", artist: "Imagine Dragons", img: "표지/radioactive.jpg", url: "https://youtube.com/watch?v=SmCcsE1SrKg&si=tNtp9hbdl9JwKaiI" },
+  { title: "Demons", artist: "Imagine Dragons", img: "표지/demons.jpg", url: "https://youtube.com/watch?v=ez_ZafBI7Ws&si=MOn83qS9Bu3O-QJV" },
+  { title: "Believer", artist: "Imagine Dragons", img: "표지/believer.jpg", url:  "https://youtube.com/watch?v=_EOtVe9CEMU&si=uTempSfebnuqQp0y" },
+  { title: "Thunder", artist: "Imagine Dragons", img: "표지/thunder.jpg", url: "https://youtube.com/watch?v=KNUOKdG6Qh0&si=-GR5vW8q9mK-T810" },
+  { title: "Whatever It Takes", artist: "Imagine Dragons", img: "표지/whateverittakes.jpg", url: " https://youtube.com/watch?v=64HseuTgTJA&si=nWLGUmaiXOPx6wMh" },
+  { title: "On Top of the World", artist: "Imagine Dragons", img: "표지/ontopoftheworld.jpg", url: "https://youtube.com/watch?v=4icADGQf8QU&si=6rdTFB2yxgzjAo7o" },
+  { title: "Natural", artist: "Imagine Dragons", img: "표지/natural.jpg", url: " https://youtube.com/watch?v=aINKfqCrr_Q&si=QcOgGjpXygcsYgO0" },
+  { title: "Bad Liar", artist: "Imagine Dragons", img: "표지/badliar.jpg", url: " https://youtube.com/watch?v=aINKfqCrr_Q&si=QcOgGjpXygcsYgO0" },
+  { title: "I Bet My Life", artist: "Imagine Dragons", img: "표지/ibetmylife.jpg", url: "https://youtube.com/watch?v=vrZ4jPxYd_s&si=gjNS_8R-1ZyyV_We" },
+
+ 
+  // Justin Bieber
+  { title: "Sorry", artist: "Justin Bieber", img: "표지/sorry.jpg", url: "https://youtube.com/watch?v=s3Y1Mr0kGA8&si=xKauq8J4Q6fr_Lgl" },
+  { title: "Love Yourself", artist: "Justin Bieber", img: "표지/loveyourself.jpg", url: "https://youtube.com/watch?v=6JLXenv6yGU&si=SjQG2VC6oo_FsSOG" },
+  { title: "Baby", artist: "Justin Bieber", img: "표지/baby.jpg", url: "https://youtube.com/watch?v=IBARX3k9uLE&si=A0JbnmUxH3uS4uap" },
+  { title: "What Do You Mean?", artist: "Justin Bieber", img: "표지/whatdoyoumean.jpg", url: "https://youtube.com/watch?v=y3btFqiFIKA&si=ZeZq38gI5Egm_JOA" },
+  { title: "Intentions", artist: "Justin Bieber", img: "표지/intentions.jpg", url: "https://youtube.com/watch?v=W0_9ZHfrZsQ&si=CRxjShpAF1qWe2pF" },
+  { title: "Peaches", artist: "Justin Bieber", img: "표지/peaches.jpg", url: " https://youtube.com/watch?v=c8DakMpIb5Q&si=I3_wu5WDKu5AEYTj" },
+  { title: "Yummy", artist: "Justin Bieber", img: "표지/yummy.jpg", url: "https://youtube.com/watch?v=R4TUojNyXg4&si=KI7gXzDiIcOw-04O" },
+
+  // Oasis
+  { title: "Wonderwall", artist: "Oasis", img: "표지/wonderwall.jpg", url: "https://youtube.com/watch?v=aqQFjigNhD4&si=TJX1dC-eVRrYDkFS" },
+  { title: "Don’t Look Back in Anger", artist: "Oasis", img: "표지/dontlookbackinanger.jpg", url: "https://youtube.com/watch?v=yeiIGUEbwMM&si=hw70YmW2DP26TQHI" },
+  { title: "Champagne Supernova", artist: "Oasis", img: "표지/champagnesupernova.jpg", url: " https://youtube.com/watch?v=RUjZn9QR-4E&si=rly7Y1S5KqxMicSI" },
+  { title: "Live Forever", artist: "Oasis", img: "표지/liveforever.jpg", url: "https://youtube.com/watch?v=CNNKH_oWCK0&si=Tol4Vc7QXl4N5Zn8" },
+  { title: "Supersonic", artist: "Oasis", img: "표지/supersonic.jpg", url: "https://youtube.com/watch?v=XEyu6iQQURo&si=4NgbnOEayL1DsMQu" },
+  { title: "Slide Away", artist: "Oasis", img: "표지/slideaway.jpg", url: "https://youtube.com/watch?v=VGuwhM10lyI&si=MUBYDSDw863MJ28I" },
+  { title: "Morning Glory", artist: "Oasis", img: "표지/morningglory.jpg", url: "https://youtube.com/watch?v=01gU00k6rY4&si=hpxk7N6bLW1PmJys" },
+  { title: "Some Might Say", artist: "Oasis", img: "표지/somemightsay.jpg", url: "https://youtube.com/watch?v=-X1aR0LKCuA&si=LZMaPzZfeLL4UuJy" },
+  { title: "Cigarettes & Alcohol", artist: "Oasis", img: "표지/cigarettesandalcohol.jpg", url: "https://youtube.com/watch?v=cDtxct0YCj0&si=XvEJBtpOyU9ZZuhq" },
+  { title: "The Importance of Being Idle", artist: "Oasis", img: "표지/theimportanceofbeingidle.jpg", url: "https://youtube.com/watch?v=aVgBFH8WMIg&si=_8GDKs4oojjZVMfs" },
+
+  // Linkin Park
+  { title: "In the End", artist: "Linkin Park", img: "표지/intheend.jpg", url: "https://youtube.com/watch?v=nO2TXUABMZs&si=dO_wImv2-b-kdokg" },
+  { title: "Numb", artist: "Linkin Park", img: "표지/numb.jpg", url: "https://youtube.com/watch?v=XrLxk7RXWpY&si=Lz0-FDG2OwgR3pVw" },
+  { title: "Crawling", artist: "Linkin Park", img: "표지/crawling.jpg", url: "https://youtube.com/watch?v=i7d__6Jc9SM&si=2hG71zC4HQl8jrE7" },
+  { title: "What I’ve Done", artist: "Linkin Park", img: "표지/whativedone.jpg", url: "https://youtube.com/watch?v=V4naQQX78lk&si=CgPlW5FqYk6Ogxwf" },
+  { title: "One Step Closer", artist: "Linkin Park", img: "표지/onestepcloser.jpg", url: "https://youtube.com/watch?v=V4naQQX78lk&si=CgPlW5FqYk6Ogxwf" },
+  { title: "Somewhere I Belong", artist: "Linkin Park", img: "표지/somewhereibelong.jpg", url: "https://youtube.com/watch?v=787jz65vxkI&si=ZgVZFnwMje-pAqka" },
+  { title: "Breaking the Habit", artist: "Linkin Park", img: "표지/breakingthehabit.jpg", url: "https://youtube.com/watch?v=ZiQHd1qGpnc&si=xm2RypsgmKF8n2jZ" },
+  { title: "Faint", artist: "Linkin Park", img: "표지/faint.jpg", url: "https://youtube.com/watch?v=uifQWIqMc8w&si=MAzOZzVqouDhco0t" },
+  { title: "Bleed It Out", artist: "Linkin Park", img: "표지/bleeditout.jpg", url: " https://youtube.com/watch?v=reiaOK-3kNs&si=QKzBRX4KkL4Q7nzJ" },
+  { title: "Shadow of the Day", artist: "Linkin Park", img: "표지/shadowoftheday.jpg", url: "https://youtube.com/watch?v=JHylzGk9XOQ&si=M67iDI4fC3aNXc28" },
+
+  // The Rolling Stones
+  { title: "(I Can’t Get No) Satisfaction", artist: "The Rolling Stones", img: "표지/satisfaction.jpg", url: "https://youtube.com/watch?v=6kxDsfdmDB0&si=1Zvx6JPemMurWkT8" },
+  { title: "Paint It Black", artist: "The Rolling Stones", img: "표지/paintitblack.jpg", url: "https://youtube.com/watch?v=jnt_7546Jm4&si=en0GcJ-GMZdTypjm" },
+  { title: "Angie", artist: "The Rolling Stones", img: "표지/angie.jpg", url: "https://youtube.com/watch?v=mYCaYlnSfJw&si=WJVxbGZwKIC6tQ7Q" },
+  { title: "Gimme Shelter", artist: "The Rolling Stones", img: "표지/gimmeshelter.jpg", url: "https://youtube.com/watch?v=DUDCtqSjrjw&si=bJ0amACJaqII7Isc" },
+  { title: "Sympathy for the Devil", artist: "The Rolling Stones", img: "표지/sympathyforthedevil.jpg", url: "https://youtube.com/watch?v=6ll1EWTC7ts&si=R-Kl_4W5tpHG1Q3_" },
+  { title: "Start Me Up", artist: "The Rolling Stones", img: "표지/startmeup.jpg", url: "https://youtube.com/watch?v=_RiOZNJ0TSE&si=t8z64OYHqm6aRiYE" },
+  { title: "Brown Sugar", artist: "The Rolling Stones", img: "표지/brownsugar.jpg", url: "https://youtube.com/watch?v=IgxGSE9njcc&si=qZPR8E3TPLIHgS5_" },
+  { title: "Jumpin’ Jack Flash", artist: "The Rolling Stones", img: "표지/jumpinjackflash.jpg", url: "https://youtube.com/watch?v=-YEJIPzH0eA&si=6p-5mjbhEKS_RaX-" },
+
+  // Shawn Mendes
+  { title: "Stitches", artist: "Shawn Mendes", img: "표지/stitches.jpg", url: " https://youtube.com/watch?v=EaBoRHkDZdk&si=CrxCmE7itzzsxEIk" },
+  { title: "Treat You Better", artist: "Shawn Mendes", img: "표지/treatyoubetter.jpg", url: " https://youtube.com/watch?v=e-XsUMVTEPY&si=Q7yRpJ4SoYUG235n" },
+  { title: "In My Blood", artist: "Shawn Mendes", img: "표지/inmyblood.jpg", url: "https://youtube.com/watch?v=qytJlUmyI-A&si=vt1TA49GOym1i97x" },
+  { title: "Señorita", artist: "Shawn Mendes", img: "표지/senorita.jpg", url: "  https://youtube.com/watch?v=5rzoMLMwa8c&si=S7h59yzg0oS8AapR" },
+  { title: "There’s Nothing Holdin’ Me Back", artist: "Shawn Mendes", img: "표지/theresnothinholdingmeback.jpg", url: "https://youtube.com/watch?v=HqJwDuPngh0&si=Q5zRVrbjTchajrY4" },
+  { title: "If I Can’t Have You", artist: "Shawn Mendes", img: "표지/ificanthaveyou.jpg", url: "https://youtube.com/watch?v=lA2VZZQvwgE&si=YVhDMT0BmV1xNE7x" },
+  { title: "Mercy", artist: "Shawn Mendes", img: "표지/mercy.jpg", url: "https://youtube.com/watch?v=WnOzK80Nw1M&si=6OcQIN_yWeLimAoN" },
+  { title: "Nervous", artist: "Shawn Mendes", img: "표지/nervous.jpg", url: "https://youtube.com/watch?v=64Bn-a0c74I&si=vG4vgx7-1ZJbas1w" },
+  { title: "Never Be Alone", artist: "Shawn Mendes", img: "표지/neverbealone.jpg", url: "https://youtube.com/watch?v=WJbZwjvrZgA&si=f-rrh2qNjtjQgyues" },
+
+];
+
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let filteredResults = [];
+
+    function searchCards(page = 1) {
+      const keyword = document.getElementById('data1').value.toLowerCase().trim();
+      const mode = document.getElementById('list').value;
+
+      filteredResults = cardData
+        .map(item => {
+          const titleMatch = item.title.toLowerCase().includes(keyword);
+          const artistMatch = item.artist.toLowerCase().includes(keyword);
+          let score = 0;
+          if (mode === 'all') score += titleMatch + artistMatch;
+          else if (mode === 'tit') score += titleMatch;
+          else if (mode === 'name') score += artistMatch;
+          return { ...item, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+      currentPage = page;
+      renderPage(currentPage);
+    }
+
+    function renderPage(page) {
+      const container = document.getElementById('card-list');
+      const pagination = document.getElementById('pagination');
+      container.innerHTML = '';
+      pagination.innerHTML = '';
+
+      const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
+      currentPage = Math.max(1, Math.min(page, totalPages));
+
+      const start = (currentPage - 1) * itemsPerPage;
+      const pageItems = filteredResults.slice(start, start + itemsPerPage);
+
+      for (const item of pageItems) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <a href="${item.url || '#'}" target="_blank" style="text-decoration: none; color: inherit;">
+            <img src="${item.img || '표지/default.png'}" alt="악보 이미지" />
+            <div class="title">${item.title}</div>
+            <div class="artist">${item.artist}</div>
+          </a>
+        `;
+        container.appendChild(card);
+      }
+
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = "« 이전";
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => renderPage(currentPage - 1);
+      pagination.appendChild(prevBtn);
+
+      const pageInput = document.createElement('input');
+      pageInput.type = 'number';
+      pageInput.id = 'pageInput';
+      pageInput.min = 1;
+      pageInput.max = totalPages;
+      pageInput.value = currentPage;
+      pageInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          const val = Number(e.target.value);
+          if (val >= 1 && val <= totalPages) renderPage(val);
+          else alert(`1에서 ${totalPages} 사이의 숫자를 입력하세요.`);
+        }
+      };
+      pagination.appendChild(pageInput);
+
+      const totalSpan = document.createElement('span');
+      totalSpan.textContent = ` / ${totalPages}`;
+      totalSpan.style.color = 'white';
+      totalSpan.style.marginLeft = '10px';
+      pagination.appendChild(totalSpan);
+
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = "다음 »";
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => renderPage(currentPage + 1);
+      pagination.appendChild(nextBtn);
+    }
+
+    window.onload = () => {
+      filteredResults = cardData;
+      renderPage(1);
+    };
+  </script>
+</body>
+</html>
